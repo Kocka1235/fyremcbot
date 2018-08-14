@@ -1,141 +1,124 @@
 const botconfig = require("./botconfig.json");
 const tokenfile = require("./token.json");
 const Discord = require("discord.js");
+const fs = require("fs");
+const bot = new Discord.Client();
+bot.commands = new Discord.Collection();
+let coins = require("./coins.json");
+let xp = require("./xp.json");
+let purple = botconfig.purple;
+let cooldown = new Set();
+let cdseconds = 5;
 
-const bot = new Discord.Client({disableEveryone: true});
+fs.readdir("./commands/", (err, files) => {
 
-bot.on("ready", async () => {
-  console.log(`${bot.user.username} is online!`);
+  if(err) console.log(err);
+  let jsfile = files.filter(f => f.split(".").pop() === "js");
+  if(jsfile.length <= 0){
+    console.log("Couldn't find commands.");
+    return;
+  }
 
-  bot.user.setActivity("Fyremc", {type: "Játszás"});
-
-  //bot.user.setGame("on SourceCade!");
+  jsfile.forEach((f, i) =>{
+    let props = require(`./commands/${f}`);
+    console.log(`${f} loaded!`);
+    bot.commands.set(props.help.name, props);
+  });
 });
 
+bot.on("ready", async () => {
+
+  console.log(`${bot.user.username} is online on ${bot.guilds.size} servers!`);
+  bot.user.setActivity("tutorials on TSC", {type: "WATCHING"});
+
+});
+
+
 bot.on("message", async message => {
+
   if(message.author.bot) return;
   if(message.channel.type === "dm") return;
 
-  let prefix = botconfig.prefix;
+  let prefixes = JSON.parse(fs.readFileSync("./prefixes.json", "utf8"));
+  if(!prefixes[message.guild.id]){
+    prefixes[message.guild.id] = {
+      prefixes: botconfig.prefix
+    };
+  }
+
+  if(!coins[message.author.id]){
+    coins[message.author.id] = {
+      coins: 0
+    };
+  }
+
+  let coinAmt = Math.floor(Math.random() * 15) + 1;
+  let baseAmt = Math.floor(Math.random() * 15) + 1;
+  console.log(`${coinAmt} ; ${baseAmt}`);
+
+  if(coinAmt === baseAmt){
+    coins[message.author.id] = {
+      coins: coins[message.author.id].coins + coinAmt
+    };
+  fs.writeFile("./coins.json", JSON.stringify(coins), (err) => {
+    if (err) console.log(err)
+  });
+  let coinEmbed = new Discord.RichEmbed()
+  .setAuthor(message.author.username)
+  .setColor("#0000FF")
+  .addField("💸", `${coinAmt} coins added!`);
+
+  message.channel.send(coinEmbed).then(msg => {msg.delete(5000)});
+  }
+
+  let xpAdd = Math.floor(Math.random() * 7) + 8;
+  console.log(xpAdd);
+
+  if(!xp[message.author.id]){
+    xp[message.author.id] = {
+      xp: 0,
+      level: 1
+    };
+  }
+
+
+  let curxp = xp[message.author.id].xp;
+  let curlvl = xp[message.author.id].level;
+  let nxtLvl = xp[message.author.id].level * 300;
+  xp[message.author.id].xp =  curxp + xpAdd;
+  if(nxtLvl <= xp[message.author.id].xp){
+    xp[message.author.id].level = curlvl + 1;
+    let lvlup = new Discord.RichEmbed()
+    .setTitle("Level Up!")
+    .setColor(purple)
+    .addField("New Level", curlvl + 1);
+
+    message.channel.send(lvlup).then(msg => {msg.delete(5000)});
+  }
+  fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
+    if(err) console.log(err)
+  });
+  let prefix = prefixes[message.guild.id].prefixes;
+  if(!message.content.startsWith(prefix)) return;
+  if(cooldown.has(message.author.id)){
+    message.delete();
+    return message.reply("You have to wait 5 seconds between commands.")
+  }
+  if(!message.member.hasPermission("ADMINISTRATOR")){
+    cooldown.add(message.author.id);
+  }
+
+
   let messageArray = message.content.split(" ");
   let cmd = messageArray[0];
   let args = messageArray.slice(1);
 
-  if(cmd === `${prefix}kick`){
+  let commandfile = bot.commands.get(cmd.slice(prefix.length));
+  if(commandfile) commandfile.run(bot,message,args);
 
-    //!kick @daeshan askin for it
-
-    let kUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
-    if(!kUser) return message.channel.send("Nem található a játékos!");
-    let kReason = args.join(" ").slice(22);
-    if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Ezt nem lehet!");
-    if(kUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Ezt a személyt nem kickelheted!");
-
-    let kickEmbed = new Discord.RichEmbed()
-    .setDescription("~Kick~")
-    .setColor("#e56b00")
-    .addField("Kickelt játékos:", `${kUser} with ID ${kUser.id}`)
-    .addField("Kickelte:", `<@${message.author.id}> with ID ${message.author.id}`)
-    .addField("Kickelte a csatornában:", message.channel)
-    .addField("Idő:", message.createdAt)
-    .addField("Oka:", kReason);
-
-    let kickChannel = message.guild.channels.find(`name`, "incidents");
-    if(!kickChannel) return message.channel.send("Nemtalálhato az incidents szoba.");
-
-    message.guild.member(kUser).kick(kReason);
-    kickChannel.send(kickEmbed);
-
-    return;
-  }
-
-  if(cmd === `${prefix}ban`){
-
-    let bUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
-    if(!bUser) return message.channel.send("Can't find user!");
-    let bReason = args.join(" ").slice(22);
-    if(!message.member.hasPermission("MANAGE_MEMBERS")) return message.channel.send("No can do pal!");
-    if(bUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Ezt a személyt nem kickelheted!");
-
-    let banEmbed = new Discord.RichEmbed()
-    .setDescription("~Ban~")
-    .setColor("#bc0000")
-    .addField("Bannolt játékos:", `${bUser} with ID ${bUser.id}`)
-    .addField("Bannolta:", `<@${message.author.id}> with ID ${message.author.id}`)
-    .addField("Bannolás szobája:", message.channel)
-    .addField("Idő:", message.createdAt)
-    .addField("Ban oka:", bReason);
-
-    let incidentchannel = message.guild.channels.find(`name`, "incidents");
-    if(!incidentchannel) return message.channel.send("Nem található az incidents szoba.");
-
-    message.guild.member(bUser).ban(bReason);
-    incidentchannel.send(banEmbed);
-
-
-    return;
-  }
-
-
-  if(cmd === `${prefix}report`){
-
-    //!report @ned this is the reason
-
-    let rUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
-    if(!rUser) return message.channel.send("Couldn't find user.");
-    let rreason = args.join(" ").slice(22);
-
-    let reportEmbed = new Discord.RichEmbed()
-    .setDescription("Reports")
-    .setColor("#15f153")
-    .addField("Jelentett játékos:", `${rUser} with ID: ${rUser.id}`)
-    .addField("Jelentette:", `${message.author} with ID: ${message.author.id}`)
-    .addField("Szoba:", message.channel)
-    .addField("Ideje:", message.createdAt)
-    .addField("Oka:", rreason);
-
-    let reportschannel = message.guild.channels.find(`name`, "reports");
-    if(!reportschannel) return message.channel.send("Nem található a report Szoba.");
-
-
-    message.delete().catch(O_o=>{});
-    reportschannel.send(reportEmbed);
-
-    return;
-  }
-
-
-
-
-  if(cmd === `${prefix}serverinfo`){
-
-    let sicon = message.guild.iconURL;
-    let serverembed = new Discord.RichEmbed()
-    .setDescription("Szerver információk")
-    .setColor("#15f153")
-    .setThumbnail(sicon)
-    .addField("Szerver neve:", message.guild.name)
-    .addField("Készült:", message.guild.createdAt)
-    .addField("Te Csatlakoztál:", message.member.joinedAt)
-    .addField("Játékosok száma:", message.guild.memberCount);
-
-    return message.channel.send(serverembed);
-  }
-
-
-
-  if(cmd === `${prefix}botinfo`){
-
-    let bicon = bot.user.displayAvatarURL;
-    let botembed = new Discord.RichEmbed()
-    .setDescription("Bot információk")
-    .setColor("#15f153")
-    .setThumbnail(bicon)
-    .addField("Bot neve:", bot.user.username)
-    .addField("Készült:", bot.user.createdAt);
-
-    return message.channel.send(botembed);
-  }
+  setTimeout(() => {
+    cooldown.delete(message.author.id)
+  }, cdseconds * 1000)
 
 });
 
