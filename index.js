@@ -1,13 +1,13 @@
 const botconfig = require("./botconfig.json");
 const tokenfile = require("./token.json");
 const Discord = require("discord.js");
-const token= proces.env.token;
+
 const bot = new Discord.Client({disableEveryone: true});
 
 bot.on("ready", async () => {
   console.log(`${bot.user.username} is online!`);
 
-  bot.user.setGame("Fyremc")
+  bot.user.setActivity("Fyremc",{type:"Játszok"})
 
   //bot.user.setGame("on SourceCade!");
 });
@@ -104,6 +104,33 @@ bot.on("message", async message => {
     return;
   }
 
+
+  if(cmd === `${prefix}tempban`){
+
+    let cUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
+    if(!cUser) return message.channel.send("A Játékos nem található!");
+    let cReason = args.join(" ").slice(22);
+    if(!message.member.hasPermission("MANAGE_MEMBERS")) return message.channel.send("Ezt nem lehet!");
+    if(cUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Ezt a személyt nem tempbannolhatod!");
+
+    let banEmbed = new Discord.RichEmbed()
+    .setDescription("~TempBan~")
+    .setColor("#bc0000")
+    .addField("Tempbannolt játékos:", `${cUser} Id-vel ${cUser.id}`)
+    .addField("Tempbannolta:", `<@${message.author.id}> Id-val ${message.author.id}`)
+    .addField("Tempbannolás Szobája:", message.channel)
+    .addField("Ideje:", message.createdAt)
+    .addField("Tempbannolás oka:", cReason);
+
+    let incidentchannel = message.guild.channels.find(`name`, "incidents");
+    if(!incidentchannel) return message.channel.send("Nem található az incidents szoba.");
+
+    message.guild.member(cUser).ban(cReason);
+    incidentchannel.send(banEmbed);
+
+
+    return message.channel.send(botembed);
+  }
 
 
 
