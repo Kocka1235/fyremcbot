@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
 const Client = new Discord.Client({disableEveryone: true});
-const prefix = require('botconfig.json');
 bot.on("ready", () => {
   console.log(`I'm ready!`);
 
@@ -18,7 +17,7 @@ Client.on('message', message => {
   let cmd = messageArray[0];
   let args = messageArray.slice(1);
 
-  if(cmd === `${prefix}kick`){
+  if(cmd === `/kick`){
 
     //!kick @daeshan askin for it
 
@@ -46,7 +45,7 @@ Client.on('message', message => {
     return;
   }
 
-  if(cmd === `${prefix}ban`){
+  if(cmd === `/ban`){
 
     let bUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
     if(!bUser) return message.channel.send("A játékos nem található!");
@@ -74,7 +73,7 @@ Client.on('message', message => {
   }
 
 
-  if(cmd === `${prefix}report`){
+  if(cmd === `/report`){
 
     //!report @ned this is the reason
 
@@ -102,7 +101,7 @@ Client.on('message', message => {
   }
 
 
-  if(cmd === `${prefix}tempban`){
+  if(cmd === `/tempban`){
 
     let cUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
     if(!cUser) return message.channel.send("A Játékos nem található!");
@@ -131,7 +130,7 @@ Client.on('message', message => {
 
 
 
-  if(cmd === `${prefix}serverinfo`){
+  if(cmd === `/serverinfo`){
 
     let sicon = message.guild.iconURL;
     let serverembed = new Discord.RichEmbed()
@@ -148,7 +147,7 @@ Client.on('message', message => {
 
 
 
-  if(cmd === `${prefix}botinfo`){
+  if(cmd === `/botinfo`){
 
     let bicon = bot.user.displayAvatarURL;
     let botembed = new Discord.RichEmbed()
