@@ -1,13 +1,31 @@
 {
-  "name": "fyrebot",
+  "name": "fyremcbot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
+  "description": "An in-depth guide on deploying your Discord.js bot on Heroku",
+  "main": "bot.js",
+  "engines": {
+    "node": "8.x",
+    "npm": "*"
   },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kocka1235/fyremcbot.git"
+  },
+  "keywords": [
+    "heroku",
+    "discord.js"
+  ],
+  "author": "MrCRaftX",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/synicalsyntax/discord.js-heroku/issues"
+  },
+  "homepage": "https://github.com/Kocka1235/fyremcbot#readme",
   "dependencies": {
-    "discord.js": "^11.1.0",
-    "request": "^2.81.0"
+    "discord.js": "^11.3.0"
   }
 }
