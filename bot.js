@@ -1,18 +1,15 @@
-const botconfig = require("./botconfig.json");
-const tokenfile = require("./token.json");
-const Discord = require("discord.js");
+const Discord = require('discord.js');
+const Client = new Discord.Client({disableEveryone: true});
+const prefix = require('botconfig.json');
+bot.on("ready", () => {
+  console.log(`I'm ready!`);
 
-const bot = new Discord.Client({disableEveryone: true});
-
-bot.on("ready", async () => {
-  console.log(`${bot.user.username} is online!`);
-
-  bot.user.setGame("Fyremc")
+  bot.user.setActivity("Fyremc",{"type":"Játszok"})
 
   //bot.user.setGame("on SourceCade!");
 });
 
-bot.on("message", async message => {
+Client.on('message', message => {
   if(message.author.bot) return;
   if(message.channel.type === "dm") return;
 
@@ -34,14 +31,14 @@ bot.on("message", async message => {
     let kickEmbed = new Discord.RichEmbed()
     .setDescription("~Kick~")
     .setColor("#e56b00")
-    .addField("Kickelt játékos:", `${kUser} with ID ${kUser.id}`)
-    .addField("Kickelte:", `<@${message.author.id}> with ID ${message.author.id}`)
+    .addField("Kickelt játékos:", `${kUser} ID-vel: ${kUser.id}`)
+    .addField("Kickelte:", `<@${message.author.id}> ID-vel ${message.author.id}`)
     .addField("Kickelte a csatornában:", message.channel)
     .addField("Idő:", message.createdAt)
     .addField("Oka:", kReason);
 
-    let kickChannel = message.guild.channels.find(`name`, "incidents");
-    if(!kickChannel) return message.channel.send("Nemtalálhato az incidents szoba.");
+    let kickChannel = message.guild.channels.find(`name`, "chat");
+    if(!kickChannel) return message.channel.send("Nemtalálhato az chat szoba.");
 
     message.guild.member(kUser).kick(kReason);
     kickChannel.send(kickEmbed);
@@ -52,7 +49,7 @@ bot.on("message", async message => {
   if(cmd === `${prefix}ban`){
 
     let bUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
-    if(!bUser) return message.channel.send("Can't find user!");
+    if(!bUser) return message.channel.send("A játékos nem található!");
     let bReason = args.join(" ").slice(22);
     if(!message.member.hasPermission("MANAGE_MEMBERS")) return message.channel.send("No can do pal!");
     if(bUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Ezt a személyt nem kickelheted!");
@@ -60,14 +57,14 @@ bot.on("message", async message => {
     let banEmbed = new Discord.RichEmbed()
     .setDescription("~Ban~")
     .setColor("#bc0000")
-    .addField("Bannolt játékos:", `${bUser} with ID ${bUser.id}`)
-    .addField("Bannolta:", `<@${message.author.id}> with ID ${message.author.id}`)
+    .addField("Bannolt játékos:", `${bUser} ID-vel: ${bUser.id}`)
+    .addField("Bannolta:", `<@${message.author.id}> ID-vel: ${message.author.id}`)
     .addField("Bannolás szobája:", message.channel)
     .addField("Idő:", message.createdAt)
     .addField("Ban oka:", bReason);
 
-    let incidentchannel = message.guild.channels.find(`name`, "incidents");
-    if(!incidentchannel) return message.channel.send("Nem található az incidents szoba.");
+    let incidentchannel = message.guild.channels.find(`name`, "chat");
+    if(!incidentchannel) return message.channel.send("Nem található az chat szoba.");
 
     message.guild.member(bUser).ban(bReason);
     incidentchannel.send(banEmbed);
@@ -88,8 +85,8 @@ bot.on("message", async message => {
     let reportEmbed = new Discord.RichEmbed()
     .setDescription("Reports")
     .setColor("#15f153")
-    .addField("Jelentett játékos:", `${rUser} with ID: ${rUser.id}`)
-    .addField("Jelentette:", `${message.author} with ID: ${message.author.id}`)
+    .addField("Jelentett játékos:", `${rUser} ID-vel: ${rUser.id}`)
+    .addField("Jelentette:", `${message.author} ID-vel: ${message.author.id}`)
     .addField("Szoba:", message.channel)
     .addField("Ideje:", message.createdAt)
     .addField("Oka:", rreason);
@@ -116,14 +113,14 @@ bot.on("message", async message => {
     let banEmbed = new Discord.RichEmbed()
     .setDescription("~TempBan~")
     .setColor("#bc0000")
-    .addField("Tempbannolt játékos:", `${cUser} Id-vel ${cUser.id}`)
-    .addField("Tempbannolta:", `<@${message.author.id}> Id-val ${message.author.id}`)
+    .addField("Tempbannolt játékos:", `${cUser} ID-vel: ${cUser.id}`)
+    .addField("Tempbannolta:", `<@${message.author.id}> ID-vel ${message.author.id}`)
     .addField("Tempbannolás Szobája:", message.channel)
     .addField("Ideje:", message.createdAt)
     .addField("Tempbannolás oka:", cReason);
 
-    let incidentchannel = message.guild.channels.find(`name`, "incidents");
-    if(!incidentchannel) return message.channel.send("Nem található az incidents szoba.");
+    let incidentchannel = message.guild.channels.find(`name`, "chat");
+    if(!incidentchannel) return message.channel.send("Nem található az chat szoba.");
 
     message.guild.member(cUser).ban(cReason);
     incidentchannel.send(banEmbed);
@@ -166,4 +163,4 @@ bot.on("message", async message => {
 
 });
 
-client.login(process.env.BOT_TOKEN)
+Client.login(process.env.BOT_TOKEN);
