@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const bot = new Discord.Client({disableEveryone: true});
 
-client.on('ready',  () => {
+client.on('ready', () => {
   console.log(`I'm ready!`);
 
   bot.user.setGame("Fyremc");
