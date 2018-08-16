@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const bot = new Discord.Client({disableEveryone: true});
 
-client.on("ready",  () => {
+client.on('ready',  () => {
   console.log(`I'm ready!`);
 
   bot.user.setGame("Fyremc");
@@ -9,7 +9,7 @@ client.on("ready",  () => {
   //bot.user.setGame("on SourceCade!");
 });
 
-Client.on("message", message => {
+Client.on('message', message => {
   if(message.author.bot) return;
   if(message.channel.type === "dm") return;
 
